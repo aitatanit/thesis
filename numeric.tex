@@ -2,17 +2,17 @@
 This section describes %{{{
 the numerical methods used for preparation of this thesis. Major accent is put on the finite-difference time-domain method, since it was used for most simulations. Several important observations are discussed which are probably not found elsewhere. At its end, this chapter briefly mentions the plane-wave expansion method. 
 %
-%The finite-element method (FEM) appears to be the most widely used in computational electromagnetism today. It approximates the structure with a custom mesh of triangles or tetrahedra. The advantage consists in describing the structure smoothly with a relatively low number of elements of variable density; the disadwantage is in the fact that the computation of the tetrahedral mesh is significantly slower compared to straightforward arithmetics in FDTD. FEM is usually used as a frequency-domain solver, though time-domain computations are possible, too. The efficiency of the FEM mesh is superior to the FDTD/FDFD uniform grid particularly for structures with great differences between scale, that is, when important tiny structures are surrounded by large free space. This was however not the case of the structures studied in this thesis.
+%The finite-element method (FEM) appears to be the most widely used in computational electromagnetism today. It approximates the structure with a custom mesh of triangles or tetrahedra. The advantage consists in describing the structure smoothly with a relatively low number of elements of variable density; the disadvantage is in the fact that the computation of the tetrahedral mesh is significantly slower compared to straightforward arithmetics in FDTD. FEM is usually used as a frequency-domain solver, though time-domain computations are possible, too. The efficiency of the FEM mesh is superior to the FDTD/FDFD uniform grid particularly for structures with great differences between scale, that is, when important tiny structures are surrounded by large free space. This was however not the case of the structures studied in this thesis.
 %
 %Some methods are specific for partially periodic structures such as gratings, namely the \textit{rigorous coupled-wave analysis}\index{rigorous coupled-wave analysis} (RCWA).
 %% Boundary-element methods, Fourier modal method, 
 %% discontinuous Galerkin method
 %}}}
 \subsection{Finite-difference time-domain method}
-\paragraph{Algorithm desciption} %{{{
-Finite-difference time-domain (FDTD) simulations rank among the simplest methods for solving partial differential equations. The simulation volume is initialized as an array in the computer memory, each element of which corresponds to a so called \textit{voxel}\index{voxel} in an orthogonal grid. When the FDTD method is applied to solve the Maxwell equations in three dimensions, six complex numbers per voxel describe the electric and magnetic vector fields, other static scalar arrays describe the permittivity and permeability of the structure and additional arrays may be used to store other physical quantities, such as material conductivity, polarizabilities and polarizations etc. 
+\paragraph{Algorithm description} %{{{
+Finite-difference time-domain (FDTD) simulations rank among the simplest methods for solving partial differential equations. The simulation volume is initialized as an array in the computer memory, each element of which corresponds to a so called \textit{voxel}\index{voxel} in an orthogonal grid. When the FDTD method is applied to solve the Maxwell equations in three dimensions, six complex numbers per voxel describe the electric and magnetic vector fields, other static scalar arrays describe the permittivity and permeability of the structure and additional arrays may be used to store other physical quantities, such as material conductivity, polarizabilities and polarisations etc. 
 
-The actual computation is realized in consecutive time steps as an explicit arithmetic operation on each voxel, taking into account only the field values in the neighboring voxels and in the previous time step \cite{taflove2005book} . This corresponds to iterating equations (\ref{eq_me3}), (\ref{eq_me4}) and (\ref{eq_ce}). % unclear - specify the field update routine exactly
+The actual computation is realized in consecutive time steps as an explicit arithmetic operation on each voxel, taking into account only the field values in the neighbouring voxels and in the previous time step \cite{taflove2005book} . This corresponds to iterating equations (\ref{eq_me3}), (\ref{eq_me4}) and (\ref{eq_ce}). % unclear - specify the field update routine exactly
 Most of the computational time is thus occupied by a simple and unconditional loop repeatedly updating all voxels, which allows to fully employ the processor cache and facilitates multi-processor parallelisation. FDTD is applicable to (possibly non-linear) problems where either the temporal evolution of the fields is being determined, or for linear systems where a frequency-domain response function can be found by Fourier-transforming the time-domain response. 
 % \begin{figure}[ht] \caption{A warning} \label{fg_parental} \centering 
 % 	\includegraphics[width=5cm]{img/Parental_Advisory_label.pdf}
@@ -21,16 +21,16 @@ Most of the computational time is thus occupied by a simple and unconditional lo
 The time-stepping routine needs the same computing power in empty vacuum as inside a complex structure. Grid-based methods such as FDTD are therefore the most efficient when a structure has a relatively complex shape, but its smallest features are no more than two or three orders of magnitude smaller than the simulation size. In contrast, an accurate-enough simulation of a structure that has some very fine features surrounded by big empty space would require an excessively high resolution, often resulting in the great majority of the voxels being inefficiently used in space where the high resolution is not needed. Other methods, % TODO discussed below
 such as the finite-element method (FEM) or boundary-element method (BEM), would be preferable for such cases.
 
-As widely used in the later chapters,  %% TODO illustrate it below!
+As widely used in the later chapters,  
 simulations of waves propagating in any periodic structure can make use of the periodic boundaries of the simulated volume, so that only one unit cell has to be taken into account in order to derive the response of the whole structure. The unit cells of periodic structures discussed in this thesis have their finest features no less than two orders of magnitude smaller than the unit cell size, and most of the simulations were aimed at obtaining a broadband spectrum, so the FDTD approach was an optimal for this task.
 
 %}}}
-\paragraph{Spatial discretisation} %{{{ %% TODO add references
-The discretisation of the grid and the time stepping introduce errors that manifest themselves by an imprecise description of the structure being simulated, known as \textit{staircasing}\index{staircasing errors} errors. Other errors arise due to an appreciable deviation of the light velocity from the correct values at higher frequencies, the so-called \textit{numerical dispersion}\index{dispersion!numerical} \cite{taflove2005book}.
-\begin{figure}[ht] \caption{\textbf{(a)}, \textbf{(b)} Different two-dimensional grids are used for different polarizations of the fields. \textbf{(c)} The three-dimensional Yee grid. The electric field components are related to the centers of the green cube edges which they are parallel to, whereas the magnetic components are expressed in the centers of the green cube which they are perpendicular to. Note the electric and magnetic fields are completely equal in this scheme; the description in terms of edges and faces could be interchanged if the lower, brown-edged cube was taken as the elementary one.} \label{fg_fdtd_yee} \centering 
+\begin{figure}[t] \caption{\textbf{(a)}, \textbf{(b)} Different two-dimensional grids are used for different polarisations of the fields. \textbf{(c)} The three-dimensional Yee grid. The electric field components are related to the centres of the green cube edges which they are parallel to, whereas the magnetic components are expressed in the centres of the green cube which they are perpendicular to. Note the electric and magnetic fields are completely equal in this scheme; the description in terms of edges and faces could be interchanged if the lower, brown-edged cube was taken as the elementary one.} \label{fg_fdtd_yee} \centering %{{{
 	\includegraphics[width=12cm]{img/FDTD_Yee_grid_2d-3d.pdf}
 \end{figure}
-
+%}}}
+\paragraph{Spatial discretisation} %{{{ %% TODO add references
+The discretisation of the grid and the time stepping introduce errors that manifest themselves by an imprecise description of the structure being simulated, known as \textit{staircasing}\index{staircasing errors} errors. Other errors arise due to an appreciable deviation of the light velocity from the correct values at higher frequencies, the so-called \textit{numerical dispersion}\index{dispersion!numerical} \cite{taflove2005book}.
 In most of the FDTD implementations, the error due to the numerical dispersion is reduced from first to second order ($\propto \Delta x^{-2}$ with regard to the voxel size $\Delta x$) by using a \textit{staggered grid}\index{staggered grid}, which, in three dimensions, is also known as Yee grid \cite{yee1966numerical}. All six field components are expressed in different points within the voxel, as is illustrated in Fig. \ref{fg_fdtd_yee}c.
 Likewise, the updates of electric and magnetic fields have to be interlaced also in time (a so-called \textit{leapfrog}\index{leapfrog algorithm} process). When accessing the field values at a given position and time, each field component has to be properly averaged between the nearest points in the grid, and between the nearest update times.  % NOTE FK: This can lead to errors especially at the boundaries with vacuum.
 
@@ -42,7 +42,7 @@ In case of a single planar interface between two different materials under a gen
 
 The situation gets even more complicated for materials with a dispersive permittivity, where also the weighting coefficients of both media need to be frequency-dependent, and another sophisticated approach has to be employed \cite{deinega2007subpixel,hamm2013dispersive}. Such a level of elaboration easily leads to computation requirements that may outweigh the benefits of averaging, and accordingly, no averaging was used for the simulations presented in this thesis. 
 
-In general, the effect of discretization in FDTD simulations can be easily identified by comparing results from two simulations that differ by the grid resolution only. It is a good practice to verify that such an error is negligible whenever a new simulation is tested.
+In general, the effect of discretisation in FDTD simulations can be easily identified by comparing results from two simulations that differ by the grid resolution only. It is a good practice to verify that such an error is negligible whenever a new simulation is tested.
 %}}}
 \paragraph{Temporal discretisation} %{{{
 While the spatial resolution $\Delta x$ can be set relatively freely depending on the accuracy expected by the user, the \textit{temporal resolution}\index{simulation!temporal resolution of} $\Delta t$ is related to $\Delta x$. Generally, if the time interval $\Delta t$ is set too high, the simulation will get numerically unstable, yielding unrealistic or even infinite values.  %  slowing down the computation and
@@ -57,13 +57,14 @@ FDTD obviously ceases to be scale-invariant whenever the properties of the mater
 Note that this frequency is only $1/\pi$ of the frequency of time-stepping cycles. From our observations, it is the value of $f_c$, and its relation to the model of materials used, that are of key importance for assessing the numerical stability of simulation. %% TODO-FK: cite
 
 %}}}
-\paragraph{Definition of materials for the FDTD method} %{{{
-\label{def_of_mat}
-
-\begin{figure}[t] \caption{Plots of complex permittivity ${\epsrl}_o(\omega)$ of titanium dioxide (rutile), for an ordinary ray, as defined in the simulation scripts \cite{dominec2014_meep_metamaterials}. The above plot has a linear vertical scale, while the bottom plot displays the same quantity using the scale that is $-\log(-\varepsilon_r)$ for $\varepsilon_r<-1$; linear for $-10<\varepsilon_r<10$ and $\log(\varepsilon_r)$ for $\varepsilon_r > 1$. The second approach better shows different orders of magnitude in the permittivity function.} \label{fg_tio2eps} \centering 
+\FloatBarrier
+\begin{figure}[ht] \caption{Plots of complex permittivity ${\epsrl}_o(\omega)$ of titanium dioxide (rutile), for an ordinary ray, as defined in the simulation scripts \cite{dominec2014_meep_metamaterials}. The above plot has a linear vertical scale, while the bottom plot displays the same quantity using the scale that is $-\log(-\varepsilon_r)$ for $\varepsilon_r<-1$; linear for $-10<\varepsilon_r<10$ and $\log(\varepsilon_r)$ for $\varepsilon_r > 1$. The second approach better shows different orders of magnitude in the permittivity function. Similarly to other figures in this thesis, the solid line denotes the real component, while the dashed line denotes the imaginary one.} \label{fg_tio2eps} \centering %{{{
 	\includegraphics[width=14cm]{img/epsilon_TiO2_linear.pdf}
 	\includegraphics[width=14cm]{img/epsilon_TiO2_symlog.pdf}
 \end{figure}
+%}}}
+\paragraph{Definition of materials for the FDTD method} %{{{
+\label{def_of_mat}
 
 As described in Chapter \ref{chap_lorentzmedia}, Eqs. (\ref{eq_lorentz_eps}, \ref{eq_lorentz_mu}), the local response of many usual media to electromagnetic waves can be well approximated by a set of Lorentz oscillators, each of which is defined by three positive real numbers: its resonance angular frequency $\omega_{0}$, damping rate $\gamma$ and oscillator strength $F$. % todo cite 
 
@@ -107,19 +108,19 @@ An illustration of a complex permittivity spectrum for titanium dioxide in its r
 
 The author has observed that $f_c$ determines the constraints for the simulation stability simultaneously in two ways:
 \begin{enumerate}
- \item{The resonance frequencies must be lower than the critical frequency,  %% TODO get a proof, or some citation, or cite MEEP sources where S.G.Johnson wrote a routine about this
+ \item{The resonant frequencies of all Lorentzians must be lower than the critical frequency,  %% TODO get a proof, or some citation, or cite MEEP sources where S.G.Johnson wrote a routine about this
 \begin{equation} \frac{\omega_{0m}}{2\pi} < f_c, \text{ for all oscillators, } % \forall m \in \{1,2 \ldots M\}, \label{eq_fdtd_stability}
 \end{equation}
-regardless of the strength $F_m$ or damping rate $\gamma_m$ of the oscillator. 
+regardless of the strength $F_m$ of the oscillator or its damping rate $\gamma_m$. 
 %This relates to the above note about expressing all high-frequency oscillators in the form of the high-frequency (static) permittivity. . 
 } 
- \item{\label{fdtdrules}For all frequencies higher than the critical one $f_c$, the real part of the permittivity, given by Eq. (\ref{eq_lorentz_eps_fdtd}), must exceed a minimum value given by the Courant factor $\cour$,
+ \item{\label{fdtdrules}For all frequencies higher than the critical frequency $f_c$, the real part of the permittivity given by Eq. (\ref{eq_lorentz_eps_fdtd}) must exceed a minimum value given by the Courant factor $\cour$,
 \begin{equation} \varepsilon_r'(2\pi\,f) > 3 \cour^{2} \equiv 3 \left( \frac{c \Delta t}{\Delta x} \right)^{2} \text{ for } \forall f \geq f_c. \label{eq_fdtd_stability_realp}\end{equation}  } % TODO verify whether the limit is eps>0 or e.g. eps>0.5 or whatever 
 A geometrical interpretation of this rule is that an instability is introduced when any wave with a frequency above $f_c$ can travel more than $1/\sqrt{3}$ of one FDTD voxel distance within one time step. 
-Note that in a nonmagnetic medium, the traveled distance is $$\frac{c\Delta t}{\sqrt{\varepsilon_r'}}.$$
+Note that in a nonmagnetic medium, the travelled distance is $$\frac{c\Delta t}{\sqrt{\varepsilon_r'}}.$$
 \end{enumerate}
 Both these rules were observed to hold in media with $\murl = 1$ only; in media with magnetic response they would probably become more complex.
-The FDTD simulation will become unstable if one of these rules is broken. The instability error initially arises from an inevitable numerical noise at the boundary of the problematic material and grows exponentially. It can be identified as a pixel-wise checkerboard pattern on the early field snapshots. Later, the field visualisation usually returns black images as the numerical infinity is reached within several tens of FDTD steps. 
+The FDTD simulation will become unstable if one of these rules is broken. The instability error initially arises from inevitable numerical noise at the boundary of the problematic material and it grows exponentially. It can be identified as a pixel-wise checkerboard pattern on the early field snapshots. Later, the field visualisation usually returns black images as the numerical infinity is reached within several tens of FDTD steps. 
 
 \paragraph{Choice of the Courant factor}%{{{
 Provided that a part of the simulation volume is empty vacuum ($\varepsilon_r'=1$), Eq. (\ref{eq_fdtd_stability_realp}) clearly determines the \textit{maximum value of the Courant factor:}\index{Courant factor!maximum value of}
@@ -153,17 +154,18 @@ In practice, a slightly more conservative choice is made that provides a safe ma
 
 %The first rule of $\omega_0/2\pi < f_c$ was observed to be very strict
 %}}}
-\paragraph{Practical aspects of material definition} %{{{
-In all realistic media, the frequencies of different oscillators span over many orders of magnitude, and an accurate medium model would need to determine the parameters of too many oscillators. Not all oscillators should be accounted for in a given FDTD simulation, though. 
-
-\begin{figure}[t] \caption{Permittivity plot for titanium dioxide, similar to Fig. \ref{fg_tio2eps}. 
+\FloatBarrier
+\begin{figure}[t] \caption{Permittivity plot for titanium dioxide, similar to Fig. \ref{fg_tio2eps}. %{{{
 %Compared to the exact model of permittivity (green line), the model with reduced number of Lorentz oscillators was plotted (black line). 
 The region forbidden by the stability rules is yellow shaded (above $f_c = 95$ THz and below $\varepsilon_r < 0.75$). The exact model for TiO$_{2}$ (green line, from Ref. \cite{dominec2014_meep_metamaterials}) would be definitely unstable due to violating both stability conditions. The numerically stable model for the frequency range of interest up to ca. 10 THz (black line) has all high-frequency oscillators substituted by an increased value of $\varepsilon_{r\infty}$. Solid and dashed lines denote the real and imaginary parts, respectively. } \label{fg_tio2eps_stripped} \centering 
 	\includegraphics[width=14cm]{img/epsilon_TiO2stripped_symlog.pdf}
 \end{figure}
+%}}}
+\paragraph{Practical aspects of material definition} %{{{
+In all realistic media, the frequencies of different oscillators span over many orders of magnitude, and an accurate medium model would need to determine the parameters of too many oscillators. Not all oscillators should be accounted for in a given FDTD simulation, though. 
 
 First of all, high-frequency oscillators would make the simulation unstable.
-Aside from this, adding overly many oscillators is also inefficient, because each oscillator term increases the computing difficulty of FDTD computations. 
+Aside from this, adding unduly many oscillators is also inefficient, because each oscillator term increases the computing difficulty of FDTD computations. 
 It is therefore advisable to keep the oscillator number to an acceptable necessary minimum, and to describe the material within some frequency range of interest (FRoI) % TODO  define range of interest
 only:
 \begin{enumerate}
@@ -176,7 +178,7 @@ $$(\Delta \varepsilon_r)_m = \frac{F_m}{\omega_{0m}^2}.$$
 If some of the high-frequency oscillators introduces significant dispersion or losses in the FRoI, it should not be eliminated in this way. This usually concerns the oscillator that is the closest to the FRoI, and it usually can be kept without causing instability.
 } 
  \item{
-Very low frequencies, corresponding to wavelengths much greater than the whole simulation volume, are theoretically accessible with a long-enough FDTD simulation, but it would not be practical to extend the FRoI close to the zero frequency. If needed, the low-frequency phenomena can often be computed more efficiently in a separate simulation with a lower resolution or even with different numerical methods.
+Very low frequencies, corresponding to wavelengths much larger than the whole simulation volume, are theoretically accessible with a long-enough FDTD simulation, but it would not be practical to extend the FRoI close to the zero frequency. If needed, the low-frequency phenomena can often be computed more efficiently in a separate simulation with a lower resolution or even with different numerical methods.
 
 The oscillators at too low frequencies can therefore be omitted without any change to the behaviour within the FRoI. One important exception is the low-frequency oscillator that stands for the Drude term and defines the conductive behaviour, as described below.
 } 
@@ -194,9 +196,9 @@ where $\omega_p$ and $\gamma$ are two independent parameters that describe the m
  \item{$\gamma$ is the momentum \textit{scattering frequency}\index{frequency!scattering f. in metals}, which can be understood as the \textit{rate of exponential decay} of the medium response to an impulse, similar to the Lorentz model. The Drude model was conceived in the early 20th century, with the simplified hypothesis that electrons are freely propagating particles that undergo 
 collisions 
 	with the atoms %% -FD?
-at an average frequency $\gamma$. Upon the colisions, their 
-	%speed would either drop to zero, or (equivalently) %% -FD?
+at an average frequency $\gamma$. Upon the collisions, their 
 	velocity vector % + FK
+	%speed would either drop to zero, or (equivalently) %% -FD?
 would be randomized. 
 %Although the mechanism of resistivity is more complicated than this,  -FD
 The Drude model often provides a very good approximation of the metallic-like response.  } 
@@ -255,7 +257,7 @@ We may now express the low- and high-frequency limits also for conductivity:
 Let us note again that in the literature that uses the negative phase convention $e^{-\ii \omega t}$, the resulting $\varepsilon_r(\omega)$ and $\sigma(\omega)$ are complex conjugated to the above results. 
 %}}}
 \paragraph{Defining resistive metals for stable low-resolution simulations} %{{{
-Simulations in the optical range are relatively safe in terms of numerical stability. From Eq. (\ref{eq_fc}) it follows that the resolution of $\Delta x = 50$ nm, suitable for the near infrared or visible spectrum, yields a critical frequency of $f_c = 3.82\cdot 10^{15}$ Hz ($\lambda = c/f_c \approx 78$ nm), which is far above the plasma frequency of metals or other conductors. Accordingly, no changes to the Drude model are usually required, although the simulation may run faster if one or more Lorentz terms outside the FRoI can be omitted.
+Simulations in the optical range are relatively safe in terms of numerical stability. From Eq. (\ref{eq_fc}) it follows that the resolution of $\Delta x = 50$ nm, suitable for the near infrared or visible spectrum, yields a critical frequency of $f_c = 3.82\cdot 10^{15}$ Hz ($\lambda = c/f_c \approx 78$ nm), which is far above the plasma frequency of metals and other conductors. Accordingly, no changes to the Drude model are usually required, although the simulation may run faster if one or more Lorentz terms outside the FRoI can be omitted.
 %If high precision of the metal model is needed, one is also free to add one or more Lorentz oscillators in the optical/UV range to refine the shape of permittivity.
  
 Realistic simulations of metals at lower resolutions, however, require taking measures to ensure stability, as the critical frequency $f_c$ is reduced below the plasma frequency of most metals when $\Delta x \gtrsim 200$ nm. % TODO check this
@@ -313,7 +315,7 @@ Bound		& Significant				& Lorentz oscillator					& \shortstack{optical phonons, 
  \hline
 Bound		& Negligible				& Debye relaxation						& \shortstack{molecular rotation \\in solids or liquids} \\
  \hline
-Free	    & Significant				& \shortstack{Reactive\\(plasmonic) medium}			& \shortstack{colisionless plasma, \\metals (from mid-infrared\\to optical range)} \\
+Free	    & Significant				& \shortstack{Reactive\\(plasmonic) medium}			& \shortstack{collisionless plasma, \\metals (from mid-infrared\\to optical range)} \\
  \hline
 Free	    & Negligible				& Resistive medium						& \shortstack{doped semiconductors,\\\newline metals (in far-infrared\\ range and below)} \\
  \bottomrule
@@ -324,7 +326,7 @@ Free	    & Negligible				& Resistive medium						& \shortstack{doped semiconduct
 %MEEP, OpenEMS, B-Calm, gSvit, EMTL, ..
 %}}}
 
-\subsection{Finite-difference frequency-domain method} % TODO
+\subsection{Finite-difference frequency-domain method}
 \paragraph{Principle}  %{{{
 When the procedure for one time-step in FDTD is defined, it can play the role of the linear operator $\mathcal L$ in the generic formulation the eigenfunction problem:
 $$\mathcal{L} \psi = e^{\ii \omega t} \psi,$$
@@ -333,15 +335,15 @@ where the function $\psi$ represents either of the electric or magnetic fields.
 % TODO maybe not! The Hamiltonian might be SQUARE of the "Maxwellian"!
 
 Both time- and frequency-domain simulations used in this thesis use complex numbers to represent all field components.
-The whole frequency-domain problem can thus be expressed as a simultaneous optimization of the $\E(\rr), \HH(\rr)$ fields, so that one time-step of FDTD is as similar as possible to the phase rotation of the functions. The angle of the phase rotation is given by the user-defined angular frequency $\omega$. For the optimization to be as efficient as possible, the \textit{stabilized biconjugate gradient}\index{stabilized biconjugate gradient} algorithm \cite{oskooi2010meep} is used. More information on the frequency-domain solver is on the project's website \cite{ab-initio}. 
+The whole frequency-domain problem can thus be expressed as a simultaneous optimisation of the $\E(\rr), \HH(\rr)$ fields, so that one time-step of FDTD is as similar as possible to the phase rotation of the functions. The angle of the phase rotation is given by the user-defined angular frequency $\omega$. For the optimisation to be as efficient as possible, the \textit{stabilized biconjugate gradient}\index{stabilized biconjugate gradient} algorithm \cite{oskooi2010meep} is used. More information on the frequency-domain solver is on the project's website \cite{ab-initio}. 
 
-The modes obtained by frequency-domain simulation can be output with an arbitrary phase offset; sometimes the real part of either electric or magnetic field can be nearly zero. In such a case, the imaginary part thereof always gives a sufficient amplitude to be plotted accurately.
+The modes obtained by a frequency-domain simulation can be retrieved with an unknown phase offset; sometimes the real part of either electric or magnetic field can be nearly zero. In such a case, the imaginary part thereof always gives a sufficient amplitude to be plotted accurately.
 
 %}}}
 \paragraph{Comparison to the time-domain computation} %{{{
-To verify their reliability, the results of the finite-difference frequency domain simulation with frequency scanned were compared against the results from the time-domain simulation. 
+To verify their reliability, the results of multiple finite-difference frequency domain (FDFD) simulations, with their frequency being scanned over a desired range of values, were compared against the results from the time-domain simulation to evince an acceptable match.
 
-The advantage of the frequency-domain (FDFD) method over the time-domain (FDTD) is a greater efficiency of the field shape at a single frequency, where the computational time of the time-domain methods grows proportionally to the desired spectral resolution. Having both algorithms packed in one library enables extremely easy switching between them. 
+The advantage of the frequency-domain (FDFD) method over the time-domain (FDTD) is a better efficiency of the field shape computation at a single given frequency, where the computational time of the time-domain methods grows proportionally to the desired spectral resolution. Having both algorithms packed in one library enables extremely easy switching between them. 
 
 While the spectra of all material properties in FDTD have to conform to the Kramers-Kronig relations, in FDFD the permittivity and conductivity of each medium can be chosen without any limitations.
 A frequency scan of multiple FDFD simulations can thus be more efficient for simulation of materials with unusually complex spectral response, such as superconductors.  
@@ -350,37 +352,37 @@ It was observed by the author that the FDFD solver in the MEEP program often fai
 
 %}}}
 
-\subsection{Plane-wave expansion method} % TODO
+\subsection{Plane-wave expansion method}
 \paragraph{Description} %{{{
-Another algorithm used in this thesis is the \textit{plane-wave expansion method}\index{plane-wave expansion method} (PWEM). Whereas FDTD and FDFD are very general algorithms that can be applied with different choices of simulation setups and for virtually any structure, PWEM is specialised for periodic structures only. 
+Another algorithm used in this thesis is the \textit{plane-wave expansion me\-thod}\index{plane-wave expansion method} (PWEM). Whereas FDTD and FDFD are very general algorithms that can be applied with different choices of simulation set-ups and for virtually any structure, PWEM is specialised for periodic structures only. 
 
 Each PWEM computation is always performed for one given value of the wavevector $\KK$. PWEM resolves one or more frequencies which lie on the dispersion curve of the Bloch's wave $\omega(\KK)$. For each of them, it can also provide the shape of the mode function $\mathbf{u_{e,m}}(\rr)$. The algorithm is described in detail, e.g., in Ref. \cite[pp. 24-28]{pazoutova2011dp}.
 
-As a convenient implementation of PWEM, we used the freely available program \textit{MPB}r\cite{johnson2001mpb}, provided as open-source project by the same group \cite{ab-initio} as MEEP. The graphical presentation of the results was prepared using a custom script published online \cite{dominec2015_mpb}.
+As a convenient implementation of PWEM, we used the freely available program \textit{MPB}\cite{johnson2001mpb}, provided as open-source project by the same group \cite{ab-initio} as MEEP. The graphical presentation of the results was prepared using a custom script published on-line \cite{dominec2015_mpb}.
 
 %}}}
 \paragraph{Comparison to FDTD and FDFD} %{{{
-The shapes of the electric and magnetic field at the edges of each photonic band are important for understanding the physics of periodic structures. Note that the fields inside a photonic band do not usually share the periodicity with the lattice, which makes them harder to interpret. Finding the band edges is an intrinsic feature of PWEM, whereas the same task is only approximate in FDTD and requires a previous search for the band edge frequencies. 
+	The shapes of the electric and magnetic field at the edges of each photonic band are important for understanding the physics of periodic structures. Note that in accordance with the Bloch's theorem, when $\KK$ does not lie in any high-symmetry point of the Brillouin zone, the electric and magnetic field differ by their phase between adjacent unit cells. Thus, their shapes do not share the periodicity with the lattice, which makes them harder to be interpreted from a field visualisation. Finding the band edges is an intrinsic feature of PWEM, whereas the same task is only approximate in FDTD and requires a previous search for the band edge frequencies. 
 
 Scaling of the computational time with the resolution may present a disadvantage compared with FDTD/FDFD, since in a simple implementation it scales with the second power of the resolution for one-dimensional problems, fourth power in 2-D problems and ninth power for 3-D problems. Application of more sophisticated algebra of sparse matrices can, however, partially remedy this.
 
-Perhaps the greatest limitation of the MPB program is that it can not cope with negative permittivity values. Its applicability is thus restricted to fully dielectric structures only.	
+Perhaps the most important limitation of the MPB program is that it cannot cope with negative permittivity values. Its applicability is thus restricted to fully dielectric structures only.	
 
 %}}}
 
 %\subsection{Summary of numerical methods used} %{{{
 %This section describes several fundamentally different numerical methods for electromagnetic simulations. 
 %\begin{enumerate}
-%\item{Finite-difference time-domain (FDTD) is a time-marching method that describes the structure on an uniform grid, allowing to compute very general electromagnetic problems. Usually a short-time, broadband pulse excitation is used, which allows to resolve a broad spectrum at once by Fourier transform. In the following chapter, two fundamentally different setups for FDTD are described that provide similar information on the metamaterial.} 
+%\item{Finite-difference time-domain (FDTD) is a time-marching method that describes the structure on an uniform grid, allowing to compute very general electromagnetic problems. Usually a short-time, broadband pulse excitation is used, which allows to resolve a broad spectrum at once by Fourier transform. In the following chapter, two fundamentally different set-ups for FDTD are described that provide similar information on the metamaterial.} 
 %\item{The finite-difference frequency-domain (FDFD) method uses the same discretisation as FDTD, but instead of time-marching and Fourier transforming the result, it searches for the field eigenmode at one given frequency by means of numerical optimisation. It is useful e.g. for mode analysis in complicated structures.} 
 %\item{The plane-wave expansion method (PWEM) reformulates the problem of a wave propagating in a periodic structure by means of linear algebra. At a given wave vector, it allows to find eigenmodes and eigenfrequencies in the structure. This can be in turn employed to efficiently retrieve the dispersion curves.} 
 %\item{The transfer-matrix method (TMM) also allows to find dispersion curves and field distribution. Although it can be extended to two or three dimensions, its one-dimensional implementation is most popular. Thanks to its simplicity, it can even give an analytical insight into the behaviour of planar structures.} 
 %\end{enumerate}
 %}}}
 
-\section{Simulation setups for metamaterial homogenization} 
+\section{Simulation set-ups for metamaterial homogenisation} 
 The general electromagnetic algorithms, %{{{
-such as FDTD, FDFD or FEM, can be employed to find the electromagnetic field behaviour in a wide variety of problems. These algorithms, however, tell nothing about the effective parameters of a metamaterial, unless they are employed in a particular simulation setup. 
+such as FDTD, FDFD or FEM, can be employed to find the electromagnetic field behaviour in a wide variety of problems. These algorithms, however, tell nothing about the effective parameters of a metamaterial, unless they are employed in a particular simulation set-up. 
 
 This section describes two different approaches to the homogenisation we have implemented, the retrieval of scattering parameters and the current-driven homogenisation. Other approaches can be found in the literature, which are briefly mentioned at the end of this section.
 % TODO theoretically shown in works [12,13,14,15] and experimentally confirmed in [16] this technique is not applicable when the sample material experiences the resonance
@@ -392,7 +394,7 @@ This section describes two different approaches to the homogenisation we have im
 %}}}
 \subsection{Retrieval of the scattering parameters} \label{chapter_sparam}
 \paragraph{Principle} %{{{
-The retrieval based on scattering parameters, also known as the \textit{s-parameter}\index{s-parameter method}, \textit{distributed impedance}\index{distributed impedance|see {s-parameter method}} or \textit{Nicolson-Ross-Weir}\index{Nicolson-Ross-Weir method|see {s-parameter method}} (NRW) method \cite{nicolson1970measurement, weir1974automatic}, has been used since 1970s to experimentally retrieve the index of refraction $N$ and wave impedance $Z$ of a homogeneous material sample.
+The retrieval based on scattering parameters, also known as the \textit{s-para\-me\-ter}\index{s-parameter method}, \textit{distributed impedance}\index{distributed impedance|see {s-parameter method}} or \textit{Nicolson-Ross-Weir}\index{Nicolson-Ross-Weir method|see {s-parameter method}} (NRW) method \cite{nicolson1970measurement, weir1974automatic}, has been used since the 1970s to retrieve experimentally the index of refraction $N$ and wave impedance $Z$ of a homogeneous material sample.
 
 The first step to its derivation is that by means of the Fresnel-Airy formulas \cite[p. 329]{born1999book},
 one can easily compute the transmittance $t(f)$ and reflectance $r(f)$ spectra of a slab of any material, provided its thickness $d$, index of refraction $N$ and wave impedance $Z$ are known.  If $r,t$ are known instead, the Fresnel-Airy formulas can be inverted to yield $N$ and $Z$ of the material of the slab. The actual computation is therefore also denoted as \textit{Fresnel inversion}\index{Fresnel inversion}.
@@ -401,20 +403,20 @@ Mathematically, this can always be done. When a homogeneous sample is replaced b
 
 As a great advantage of this approach, there is no requirement to inspect the fields inside the tested structure, as the retrieval is based only on the amplitude and phase of the  $r(f)$ and $t(f)$ outside the material. It has become a popular way to retrieve the effective metamaterial parameters thanks to its ease to realize both experimentally and numerically, with FDTD or other algorithms \cite{terao2011},
 
-The most-often mentioned downside of this method is that its solutions have infinitely many branches, and it is necessary to establish which one should be chosen, and why. In this section we describe that this can, in fact, be solved by a relatively simple extension of the algorithm, and in the Results chapter it is shown that there are nontrivial rules for the choice of the branch.
+The most-often mentioned downside of this method is that its solutions have infinitely many branches, and it is necessary to establish which one should be chosen, and why. In this section we describe that this can, in fact, be solved by a relatively simple extension of the algorithm, and in the Results chapter it is shown that there exist well-defined rules for the choice of the branch.
 
 Aside from yielding multiple branches, the physical interpretation of the data can get even more intricate when effective parameters are to be assigned to an inhomogeneous slab of a metamaterial. Due attention has to be paid to minimize the intrinsic imprecision of this method, as well as to establish the limits of its applicability. 
 %}}}
-\paragraph{Simulation setup} %{{{
-\begin{figure}[ht] \centering \caption{The simulation setup for the scattering parameter method. All simulation elements are described in the text.
+\paragraph{Simulation set-up} %{{{
+\begin{figure}[ht] \centering \caption{The simulation set-up for the scattering parameter method. All simulation elements are described in the text.
 % TODO REWRITE, and add the X-Y-Z arrows to the figure}
 } \includegraphics[width=.8\textwidth]{img/meep_geometry.pdf}  \label{fg_fdtd_sparam} \end{figure} %% 
-The setup for the scattering parameter methon is depicted in Fig. \ref{fg_fdtd_sparam}. The wave is emitted from the source plane (green rectangle) with a direction parallel to the $z$-axis. The temporal shape of the waves was not critical for the simulation; a very short pulse, with a spectrum spanning from the GHz range to ca. 5 THz was used. 
+The set-up for the scattering parameter method is depicted in Fig. \ref{fg_fdtd_sparam}. The wave is emitted from the source plane (green rectangle) in a direction parallel to the $z$-axis. The temporal shape of the waves was not critical for the simulation; a very short pulse, with a spectrum spanning from the GHz range to ca. 5 THz was used. 
 
 Periodic boundary conditions along the $x$- and $y$-axes were set, so that effectively an infinite metamaterial slab was simulated. On both faces perpendicular to the $z$ axis we added regions denoted as \textit{perfectly matched layers}\index{perfectly matched layers} \cite{oskooi2011distinguishing} to absorb all radiation (pink areas in Fig. \ref{fg_fdtd_sparam}). The implementation is based on gradually introducing imaginary part into the voxel dimensions \cite{oskooi2010meep} to prevent reflections with an arbitrary incidence angle, polarisation or frequency of the wave.
 The average electric and magnetic fields in each of the monitor planes (blue rectangles) were recorded  in each simulation step.  
 
-Passing through the first monitor plane, the wave enters the volume of the unit cell (delimited by empty rectangles) and interacts with the structure. A part of its energy is reflected back, a part passes through and the rest may be dissipated if the structure is lossy. The fields that pass through the structure are recorded at the second monitor plane. After the energy stored in the structure drops to a small enough level, the FDTD simulation terminates and the recorded fields are processed to obtain the complex-valued reflectance $r(f)$ and transmittance $t(f)$ as functions of frequency $f$. % Before this procedure is described, a modification important for the accuracy of this setup is discussed below.
+Passing through the first monitor plane, the wave enters the volume of the unit cell (delimited by empty rectangles) and interacts with the structure. A part of its energy is reflected back, a part passes through and the rest may be dissipated if the structure is lossy. The fields that pass through the structure are recorded at the second monitor plane. After the energy stored in the structure drops to a small enough level, the FDTD simulation terminates and the recorded fields are processed to obtain the complex-valued reflectance $r(f)$ and transmittance $t(f)$ as functions of frequency $f$. % Before this procedure is described, a modification important for the accuracy of this set-up is discussed below.
 % todo convert frequency f to omega? Why not?
 
 %\begin{figure}[ht] \caption{An example result of a FDTD simulation (visualised using the \textit{Paraview}\index{Paraview} program). A dielectric sphere, shown in grey, was placed in a less usual, but equivalent position, across the periodic boundaries. The electric field amplitude was shown in one quarter of the simulation volume, with a clear enhancement near the dielectric surface (pink-red). % todo{replace this with a better one}
@@ -431,11 +433,11 @@ The impact of the evanescent waves partially reaching the unit cell boundaries i
 \begin{enumerate}
  \item{First, computing a single layer of a metamaterial unit cells, with free space in front and behind it, obviously more or less changes its behaviour compared to the periodic lattice. 
 
-This issue is inherent to the simulation setup, but its impact can be assessed by simulating more than one unit cell, since the retrieved values will change slightly with the number of layers being simulated: a single-cell simulation suffers the most from the absence of adjacent layers, whereas in a two-cell simulation the effect should be halved. Simulations of three (or more) cells suffer from different behaviours of the cells at the surface and inside, which possibly broadens the resonance frequency and can yield confusing results unsuitable to the retrieval method.
+This issue is inherent to the simulation set-up, but its impact can be assessed by simulating more than one unit cell, since the retrieved values will change slightly with the number of layers being simulated: a single-cell simulation suffers the most from the absence of adjacent layers, whereas in a two-cell simulation the effect should be halved. Simulations of three (or more) cells suffer from different behaviours of the cells at the surface and inside, which possibly broadens the resonance frequency and can yield confusing results unsuitable to the retrieval method.
  } 
- \item{Second, the monitor planes can not distinguish between the evanescent or radiated electromagnetic field, but only the radiated waves are relevant for the s-parameter computations. At very low frequencies or at frequencies close to resonances, it was observed that the near field can significantly distort the retrieved parameters.
+ \item{Second, the monitor planes cannot distinguish between the evanescent or radiated electromagnetic field, but only the radiated waves are relevant for the s-parameter computations. At very low frequencies or at frequencies close to resonances, it was observed that the near field can significantly distort the retrieved parameters.
 
-This can be resolved by shifting both monitor planes away from the metamaterial cell by a distance denoted as \textit{padding}\index{padding}. As the evanescent field decays exponentially, padding of less than half of the unit cell size is often sufficient to suppress all artifacts due to near-field components. In contrast, propagating waves only gain an additional phase offset that can be easily compensated after the simulation. } 
+This can be resolved by shifting both monitor planes away from the metamaterial cell by a distance denoted as \textit{padding}\index{padding}. As the evanescent field decays exponentially, padding of less than half of the unit cell size is often sufficient to suppress all artefacts due to near-field components. In contrast, propagating waves only gain an additional phase offset that can be easily compensated after the simulation. } 
  \end{enumerate}
 To the knowledge of the author, such a shift of monitor planes has not been employed in any related paper. It efficiently resolves the issue, and it does so at an acceptable expense of moderately extending the simulation volume. % (todo? figure here a-b-c of different padding near a dielectric rod)
 
@@ -443,15 +445,15 @@ To the knowledge of the author, such a shift of monitor planes has not been empl
 \paragraph{Scattering-parameter retrieval procedure} %{{{
 The averaged electric and magnetic fields recorded at the first monitor plane will be denoted as $E_{x}^{(1)}(t), H_{y}^{(1)}(t)$. Likewise, those at the second monitor plane will be denoted as $E_{x}^{(2)}(t), H_{y}^{(2)}(t)$. The amplitudes of typical time records are shown and commented in Fig. \ref{fg_sparam_timedomain}.  
 \begin{figure}[ht] \centering \caption{Time-domain records of the fields in the s-parameter-based retrieval method; absolute values of the complex recorded fields at the first $E_{x}^{(1)}(t), H_{y}^{(1)}(t)$ and second $E_{x}^{(2)}(t), H_{y}^{(2)}(t)$ monitor plane.\\
-		The excitation pulse (ca. 2 ps long) excited in the structure two distinct resonances that both decayed exponentially in time with different decay rate, as outlined by the thin line segments. About 35 ps after the source was switched off, the stronger resonance reduces its intensity below that of the higher quality resonance, which can be clearly seen as a change of the decaying amplitude slope. The simulation duration  was $t_{sim} =$ 150 ps. \\
+The impinging pulse (ca. 2 ps long) excited two distinct resonances  in the structure, that both decayed exponentially in time with different decay rates, as outlined by the thin line segments. About 35 ps after the source was switched off, the stronger resonance reduces its intensity below that of the higher quality resonance, which can be clearly seen as a change of the decaying amplitude slope. The simulation duration  was $t_{sim} =$ 150 ps. \\
 After 80 \% of the time record length, the field is multiplied by the smooth envelope function described by Eq. (\ref{eq_envelope}).} \includegraphics[width=.7\textwidth]{img/sim_timedomain_debug.pdf} \label{fg_sparam_timedomain} \end{figure}
 
-The spectral resolution is determined by the length of the time record. The higher quality of resonance, the sharper its spectral features. %is equivalent to coarse sampling on the frequency axis, which can not fully resolve the shape of the resonance. 
+The spectral resolution is determined by the length of the time record. The higher quality of resonance, the sharper its spectral features. %is equivalent to coarse sampling on the frequency axis, which cannot fully resolve the shape of the resonance. 
 From the \textit{Fourier-Plancherel theorem}\index{Fourier-Plancherel theorem} %% TODO ref
-it follows that the part of the electromagnetic energy which was coupled to the structure, but was not radiated back until the end of the time record, will be also missing in the spectra in the frequency domain. When the time record is too short and significantly truncates a resonance ring-down, characteristic artifacts in the spectra occur which are very detrimental to further visual and numerical evaluation. 
+it follows that the part of the electromagnetic energy that was coupled to the structure, but was not radiated back until the end of the time record, will be also missing in the spectra in the frequency domain. When the time record is too short and significantly truncates a resonance ring-down, characteristic artefacts in the spectra occur which are very detrimental to further visual and numerical evaluation. 
 
 \label{convolringing}
-Using the convolution theorem (see Sect. \ref{subsection_local_resp}), it can be deduced that clipping the recorded fields by a rectangular window in time domain introduces artifacts equivalent to a convolution with the $sin(f)/f$ function in the frequency domain. Multiplication of the records with a smooth window function, known also as \textit{apodization}\index{apodization}, does not improve spectral resolution, but it suppresses the visually distracting \textit{ringing artifacts}\index{ringing artifacts}, which are apparent for the quadrupole resonances (see, e.g., Fig. \ref{fg_expe_fishnets}). 
+Using the convolution theorem (see Sect. \ref{subsection_local_resp}), it can be deduced that clipping the recorded fields by a rectangular window in time domain introduces artefacts equivalent to convolution with the $sin(f)/f$ function in the frequency domain. Multiplication of the records with a smooth window function, known also as \textit{apodisation}\index{apodisation}, does not improve spectral resolution, but it suppresses the visually distracting \textit{ringing artefacts}\index{ringing artefacts}, which are apparent for the quadrupole resonances (see, e.g., Fig. \ref{fg_expe_fishnets}). 
 
 To this end, all four time records were multiplied by the envelope function $g(t)$ before further processing:
 \begin{equation} 
@@ -465,8 +467,8 @@ which ensured that after 80 \% of the overall simulation duration $t_{sim}$ the 
 By means of the Fourier transform, the fields were converted to the frequency domain. This operation is simply denoted as $E_{x}^{(1)}(t) \rightarrow E_{x}^{(1)}(f)$, and so on. 
 \begin{figure}[ht] \caption{An illustration of orientations of the electric field $\E$ (blue), magnetic field $\HH$ (light brown) and wave vector $\kk$ (thick arrow) for the waves registered in the simulation.}  \centering \includegraphics[width=8cm]{img/sim_separating_wave.pdf} \label{fg_separating_wave}\end{figure}
 
-The monitor planes are assumed to be located in vacuum, and at a distance sufficient to eliminate the evanescent waves of the simulated structure. It follows that the vectors of the electric field $\E$, magnetic field $\HH$ and the wave vector $\kk$ must a form right-handed triplet. %% TODO reference the M. E. solution
-At both monitor planes, the forward and backward wave are linearly superposed as illustrated in Fig. \ref{fg_separating_wave}. Therefore they can be separated by using the following relations: 
+The monitor planes are assumed to be located in vacuum, and at a distance sufficient to eliminate the evanescent waves of the simulated structure. It follows that the vectors of the electric field $\E$, magnetic field $\HH$ and the wave vector $\kk$ must form a right-handed triplet. %% TODO reference the M. E. solution
+At both monitor planes, the forward and backward waves are linearly superposed as illustrated in Fig. \ref{fg_separating_wave}. Therefore they can be separated by using the following relations: 
 \begin{equation} 
 	\begin{split}
 		A^{\text{(in1)}}(f)  := \frac{E_{x}^{(1)}(f) + Z_0 H_{y}^{(1)}(f)}{2}, \quad \quad \quad & A^{\text{(out1)}}(f) := \frac{E_{x}^{(1)}(f) - Z_0 H_{y}^{(1)}(f)}{2}\\
@@ -476,8 +478,8 @@ At both monitor planes, the forward and backward wave are linearly superposed as
 The constant $Z_0$ stands for the \textit{vacuum impedance}\index{vacuum impedance}, i.e. the ratio of the electric and magnetic fields of a freely propagating wave. Its universal value in SI units is $Z_0 = \sqrt{\mu_0/\varepsilon_0} = 4\pi c \cdot 10^{-7} \approx 376.7$ $\Upomega$, but in the actual FDTD simulations, the built-in convention of $Z_0 = 1$ was used.
 An example of the wave separation result is plotted in Fig. \ref{fg_ampli}.  
 \begin{figure}[ht] \caption{Separated amplitudes of the forward and backward waves at the first and second monitor planes 
-allow to assess the validity of the results.\\
-The incident wave $A^{\text{(in1)}}(f)$ should have a smooth spectrum (blue curve), as it is directly generated by a broadband source. The reflected wave $A^{\text{(out1)}}(f)$ (green curve) and the transmitted one $A^{\text{(out2)}}(f)$ (cyan curve) appear to be somewhat complementary to each other, since squares of their amplitudes should approximately sum up to the square of the incident wave amplitude, or less in case of losses. \\
+allow to assess the validity of the simulation results.\\
+The incident wave $A^{\text{(in1)}}(f)$ should have a smooth spectrum (blue curve), as it is directly generated by a broadband source. The reflected wave $A^{\text{(out1)}}(f)$ (green curve) and the transmitted one $A^{\text{(out2)}}(f)$ (light-blue curve) appear to be somewhat complementary to each other, since squares of their amplitudes should approximately sum up to the square of the incident wave amplitude, or less in case of losses. \\
 The fourth wave $A^{\text{(in2)}}(f)$ should be negligible, as almost all the wave energy is expected to be absorbed by the perfectly matched layers at the $z$-faces of the simulation volume. In practice it is nonzero, also due to numerical imprecision and remaining near-field components of the structure. This relative error in amplitude is usually less than $10^{-3}$.}  \centering \includegraphics[width=10cm]{img/sim_ampli_debug_band.pdf}\label{fg_ampli} \end{figure} 
 
 Finally, one can easily compute the complex scattering parameters $r(f)$ and $t(f)$ as the ratios of the reflected and transmitted wave amplitudes to that of the incident wave, respectively:
@@ -489,27 +491,29 @@ Finally, one can easily compute the complex scattering parameters $r(f)$ and $t(
 \label{eq_sparam}\end{equation}
 
 %}}}
-\paragraph{Comparison of simulated and experimental spectra} %{{{
-
+\FloatBarrier%{{{
 \begin{figure} 
 \caption{\textbf{(a)} Electron microphotograph of the STO array (from \cite{nemec2009tunable}), front view, 
-\textbf{(b)} dimensions of one unit cell, drawn as the side view}  \centering 
+\textbf{(b)} dimensions of one unit cell, drawn as the side view}  \centering \vspace{-4mm}
 \begin{overpic}[width=.6\textwidth]{img/STOBar_photo.pdf}     \put(0,67) {\textbf{(a)}} \end{overpic}\quad
-\begin{overpic}[width=.3\textwidth]{img/EBars_STO_sketch.pdf} \put(1,95) {\textbf{(b)}} \end{overpic}
-\label{fg_STO_bar_geom} \end{figure} 
-
+\begin{overpic}[width=.3\textwidth]{img/EBars_STO_sketch.pdf} \put(1,95) {\textbf{(b)}} \end{overpic} 
+\vspace{-5mm}\label{fg_STO_bar_geom} \end{figure} 
+%}}}
+\paragraph{Comparison of simulated and experimental spectra} %{{{
 To verify the simulation results against experimental data, we computed $r(f)$ and $t(f)$ for a structure that had been measured in our terahertz laboratory.
 It consisted of an array of high-permittivity dielectric bars, cut using a femtosecond laser % todo{what was the laser power and other parameters?
 from a 26 $\upmu$m thick strontium titanate (STO) slab \cite{nemec2009tunable}. The periodicity was 96 $\upmu$m and the laser cut width 30 $\upmu$m, resulting in the width of 66 $\upmu$m for each rectangular bar as shown in Fig. \ref{fg_STO_bar_geom}. 
 
 The permittivity of STO strongly depends on the temperature, and was not known a priori, so it was chosen as $\varepsilon_r(1\text{ THz}) = 365 + 62\ii$ for the simulation to match the experimental spectra.
+\FloatBarrier
 \begin{figure} \caption{Experimental transmission $t_{exp}(f)$, compared with numerical reflectance $r(f)$ and transmittance $t(f)$ for strontium titanate bars with a rectangular cross-section $26 \times 66$ $\mu$m$^2$, oriented parallel with the electric field. }  \centering \includegraphics[width=12cm]{img/STObar_rt.pdf} \label{fg_STO_bar_rt} \end{figure} 
 
-In Fig. \ref{fg_STO_bar_rt}, the curves computed using the FDTD simulations are compared with the experimental ones, showing a very good match in three well-resolved resonance peaks, and a high reflectance ($|r| > 0.9$) in most of the spectrum which is caused by a strong impedance mismatch between the dielectric and the surrounding air.
+In Fig. \ref{fg_STO_bar_rt}, the curves computed using the FDTD simulations are compared with the experimental ones, showing very good match in three well-resolved resonance peaks, and high reflectance ($|r| > 0.9$) in most of the spectrum which is caused by strong impedance mismatch between the dielectric and the surrounding air.
 
 \begin{figure}[ht] \centering \caption{
 Set of simulated absorption spectra, computed as $1-|r^2|-|t^2|$, for different widths of the strontium titanate bar (in micrometers).
-The experimental bar width of 66 $\mu$m is denoted by the white line. Different modes are marked by the black curves and the cross-sections of their approximate electric field shapes are drawn above the plot.} \includegraphics[width=\textwidth]{img/STOBarC_modes2.pdf} \label{fg_STO_bar_modes} \end{figure}
+The experimental bar width of 66 $\mu$m is denoted by the white line. Different modes are marked by the black curves and the cross-sections of their approximate electric field shapes are drawn above the plot.} \includegraphics[width=.9\textwidth]{img/STOBarC_modes2.pdf} \label{fg_STO_bar_modes}\vspace{-5mm} \end{figure}
+\FloatBarrier
 %}}}
 \paragraph{Example of a parametric scan with FDTD simulations} %{{{
 To briefly illustrate further possibilities of the numerical simulations, in Fig. \ref{fg_STO_bar_modes} we scanned the relative width of the STO bar, and computed the relative energetic loss in the structure given by $1-|r^2|-|t^2|$. Each loss peak can be clearly associated with one resonant mode in the dielectric. Only modes with a mirror symmetry in the direction  transverse to the wave propagation couple to the wave; the remaining antisymmetric modes would manifest themselves at oblique incidence only.
@@ -532,7 +536,7 @@ where neither the integer-valued branch index $m\in \mathbb{Z}$, nor the sign of
 \paragraph{Search for the correct solution} %{{{
 From Eqs. (\ref{eq_Neff}) and (\ref{eq_Zeff}) it follows that the correct solution depends on three discrete-valued functions of frequency, i.e. the sign of $\Neff(f)$, its branch index $m(f)$, and the sign of $\Zeff(f)$, which have to be determined during computation.  We identified the following criteria for selecting exactly one of infinitely many solutions:
 \begin{enumerate}
-	\item{Passivity with regard to the wave propagating through the structure requires the \textit{imaginary}\index{imaginary} part of refractive index be non-positive: 
+	\item{Passivity, i.e., inability to supply energy to the wave propagating through the structure, requires the \textit{imaginary}\index{imaginary} part of refractive index be non-positive: 
 		 \begin{equation} \Neff''(f) \leq 0 \quad \forall f\in \mathbb{R} \label{eq_Neff_pass}\end{equation}
 		 } 
 	 \item{Passivity with regard to the wave reflected from the structure interface requires the \textit{real} part of refractive index be non-positive, too: 
@@ -547,10 +551,11 @@ Perhaps the most familiar consequence of this criterion is the requirement of co
 Note that in the papers that use the other complex convention, i.e. $e^{-\ii\omega t}$, both passivity conditions use the opposite sign. This does not apply to the kernels of the Fourier nor Hilbert transforms.
 
 %}}}
-\paragraph{Retrieval of effective $\Neff'$ based on unambiguous complex arccosine} %{{{
+\FloatBarrier%{{{
 \begin{figure} \centering \caption{\textbf{(a)} Real and \textbf{(b)} imaginary parts of the arccosine of complex argument $\upsilon$. Branch cuts are denoted with thick lines. The thick curve shows a possible trajectory of  $\upsilon(f)$ (upon a frequency variation), which intersects the branch cuts in points marked as R, L.\\ \textbf{(c)} From top to bottom: an example function  $\upsilon(f)$, its ordinary arccosine, example branch and sign choices ensuring the continuity of the arccosine function, and the continuous version of $\arccos_{\mathrm{c}}(\upsilon)$, as determined by the algorithm described.} \includegraphics[width=16cm]{img/continuous_arccos/continuous_arccos_new.pdf} \label{fg_arccos}
 \end{figure}
-
+%}}}
+\paragraph{Retrieval of effective $\Neff'$ based on unambiguous complex arccosine} %{{{
 We wrote a custom procedure to select the correct solution automatically on pure mathematical basis. To our knowledge, such an approach was not addressed in any of previously published papers. Alternative approaches are briefly discussed in the following section.
 
 The ambiguity in Eqs. (\ref{eq_Neff}, \ref{eq_Zeff}) results from the fact that the inverse functions of arccosine and square root are not injective mappings \cite{simovski2009material}:
@@ -605,11 +610,11 @@ This is the only issue known to the author which arises from the described effec
 The scattering-parameter method is the most widely used one for the effective parameter retrieval. It stands out among other methods by relying on the amplitudes of the reflected and transmitted waves only, without any inspection of the fields inside the unit cell. It is also efficient, since it requires a single time-domain simulation to retrieve the full spectrum of effective parameters. The wave is let to propagate freely through the structure, and then the retrieval algorithm determines the wavenumber at each frequency component of the incident wide-band pulse. The frequency $\omega$ represents the input, and the wavenumber $K(\omega)$ is one of the outputs.
 
 \label{sparamweaknesses}
-However, the scattering-parameter method also has its weaknesses. Perhaps the greatest one is that it does not explicitly fail in cases it is not supposed for; or, as stated in Ref. \cite{markel2013current}:
+However, the scattering-parameter method also has its weaknesses. Perhaps the worst one is that it does not fail explicitly in cases it is not appropriate for; or, as stated in Ref. \cite{markel2013current}:
 \begin{displayquote} 
 \textit{Of course, a refractive index per se (generally, tensorial and dependent on the direction of the Bloch's wave vector) can always be formally introduced for a Bloch's wave.}
 \end{displayquote}
-A great care must be taken to verify whether the retrieved values of effective parameters make any physical sense whatsoever, or are just a confusing output of an algorithm used outside its scope. The majority of the possible issues was mentioned above:
+One has to be careful to verify whether the retrieved values of effective parameters make any physical sense whatsoever, or are just a confusing output of an algorithm used outside its scope. The majority of the possible issues was mentioned above:
 \begin{enumerate}
 		 \item{The method is intrinsically imprecise, because the evanescent fields of most structures are influenced by the free space in front of the unit cell and behind it. This issue can be neglected if nearly all the energy is transferred by the radiated wave, in which case the metamaterial is sometimes described as a \textit{Bloch's lattice}\index{Bloch's!lattice} \cite{simovski2007bloch, andryieuski2012bloch}. In other cases, usually in dense or metallic structures, a significant amount of energy is transferred by the near-field coupling, and it can be demonstrated that the effective parameters retrieved by this method strongly depend on the number of layers \cite{rockstuhl2008transition,andryieuski2010homogenization} which renders the approach invalid.
 			 } 
@@ -620,7 +625,7 @@ A great care must be taken to verify whether the retrieved values of effective p
  \end{displayquote}
  In the view of the author of this thesis, also the retrieved $\Neff$ in Fig. 7c of Ref. \cite[p. 036617-9]{smith2005electromagnetic} can be reasonably interpreted if and only if the structure is symmetric. 
 			 }
-	     \item{Perhaps the most fundamental limitation of this method comes from its principle of retrieving the wavenumber at a given frequency. For a periodic structure which exhibits a strong enough spatial dispersion, more than one wavenumber exist at a single frequency as shown in Figs. \ref{fg_dcll_nl}. For any frequency from such a problematic range, the detected effective parameters depend on the unknown ratio of the energy coupled to either of the waves. Therefore, the method is inapplicable for structures with a strong spatial dispersion. This effect is illustrated in the Results section (e.g. in Fig. \ref{fg_cdh2}).
+	     \item{Perhaps the most fundamental limitation of this method comes from its principle of retrieving the wavenumber at a given frequency. For a periodic structure which exhibits a strong enough spatial dispersion, more than one wavenumber exist at a single frequency as shown in Figs. \ref{fg_dcll_nl}. For any frequency from such a problematic range, the retrieved effective parameters depend on the unknown ratio of the energy coupled to either of the waves. Therefore, the method is inapplicable for structures with a strong spatial dispersion. This effect is illustrated in the Results section (e.g. in Fig. \ref{fg_cdh2}).
 			 }
 \end{enumerate}
 
@@ -642,7 +647,7 @@ Exact copying of the fields from one side to another would require the wavevecto
 \begin{equation} E(\rr + a_x\mathbf{x}/2) \quad\rightarrow\quad  e^{-\ii K_x a_x}\; E( \rr - a_x\mathbf{x}/2), \label{eq_phaseshiftp}\end{equation}
 	where $\mathbf{x}$ is the unit vector along the x-axis, and $a_x$ are the unit cell size along this axis. The unit cell is assumed to be centered around the $x=0$ point, thus $x=\pm a_x/2$ denotes the point at the boundary, and similarly for other axes.
 
-Positive phase advance is applied when copying the fields parallel to the x-axis, and negative phase retardation is applied when simultaneously copying the fields in the opposite direction:
+Positive phase advance proportional to $K_x$ is applied when copying the fields parallel to the x-axis, and negative phase retardation is applied when simultaneously copying the fields in the opposite direction:
 \begin{equation} E(\rr - a_x\mathbf{x}/2)  \quad\rightarrow\quad  e^{+\ii K_x a_x}\; E(\rr + a_x\mathbf{x}/2). \label{eq_phaseshiftn}\end{equation}
 A similar field-copying procedure is repeated in each simulation step for all remaining axes, $\mathbf{y}$ and $\mathbf{z}$, in the case of a 3-D simulation. 
 
@@ -652,13 +657,13 @@ In order to excite the simulation volume with a single wavevector $\KK$ which co
 \begin{equation} \mathbf{J}(\rr, t) := \mathbf{x} \, e^{-\ii \KK\cdot \rr} \,j(t), \label{eq_currentsource}\end{equation}
 	where $\mathbf{x}$ determines the default polarisation of the electric field and $j(t)$ is the temporal profile of the source.
 
-Excitation of the structure with this kind of the source gave the current-driven homogenisation its name. Unlike the scattering-parameters method, in CDH the source volume coincides with the entire unit cell volume. An attempt of visualisation of this minimalistic simulation setup is in Fig. \ref{fg_fdtd_cdh}. 
-\begin{figure}[h] \centering \caption{Current-driven homogenisation setup consists of a single unit cell with all faces set to be Bloch-periodic, with appropriate phase shift between the corresponding pair of faces. One example of the real part of the spatially varied source amplitude is sketched along the unit cell edge as the green-filled curve.} \includegraphics[width=.5\textwidth]{img/cdh_geometry.pdf}  \label{fg_fdtd_cdh} \end{figure} %% 
+Excitation of the structure with this kind of the source gave the current-driven homogenisation its name. Unlike the scattering-parameters method, in CDH the source volume coincides with the entire unit cell volume. An attempt of visualisation of this minimalistic simulation set-up is in Fig. \ref{fg_fdtd_cdh}. 
+\begin{figure}[h] \centering \caption{Current-driven homogenisation set-up consists of a single unit cell with all faces set to be Bloch-periodic, with appropriate phase shift between the corresponding pair of faces. One example of the real part of the spatially varied source amplitude is sketched along the unit cell edge as the green-filled curve.} \includegraphics[width=.5\textwidth]{img/cdh_geometry.pdf}  \label{fg_fdtd_cdh} \end{figure} %% 
 %}}}
 \paragraph{Temporal profile of the source}%{{{
 With the wavevector restricted to a single given value, it is necessary to excite and detect as many corresponding modes of the structure as possible. Therefore, a short and broadband temporal source profile could be reused from the scattering parameter method. 
 
-Unlike the scattering-parameters method, CDH can not easily detect the spectral profile of the exciting field, and the retrieved fields can not be normalized against it. To maintain an approximately flat source amplitude over a wide part of the specturm, a nontrivial temporal shape of the source was designed, tested and submitted to the MEEP simulation developer site \cite{} online:
+Unlike the scattering-parameters method, CDH cannot detect easily the spectral profile of the exciting field, and the retrieved fields cannot be normalized against it. To maintain an approximately constant source amplitude over a wide part of the spectrum, a nontrivial temporal shape of the source was designed, tested and finally also submitted to the MEEP simulation developers:
 \begin{equation} 
 	j(t) := w_{BN}(t)\, \left[\mathrm{Si}(2\pi f_1 t) - \mathrm{Si}(2\pi f_2 t) \right]
 \label{eq_currentsourcetime}\end{equation}
@@ -666,8 +671,8 @@ where the transcendent sine-integral function introduces the flat-top rectangula
 \begin{equation} \mathrm{Si}(t) = \int_0^t \frac{\sin \tau}{\tau} d\tau, \label{eq_Si}\end{equation}
 	The electric field radiated by a source is proportional to the temporal derivative of the current $j(t)$ \cite{ab-initio}, therefore the sine-integral must be used to obtain the field shape of $E_x\propto \sin(t)/t$, which is known to have a rectangular flat-top spectrum.
 
-If the source amplitude had an infinite duration in time, its spectrum would form a perfect rectangular function. However, clipping the temporal duration of the source results in spectral artifacts, as was already described on the page \pageref{convolringing}.
-The artifacts can be very efficiently suppressed by multiplying the source by the \textit{Blackmann-Nutall window}\index{Blackmann-Nutall window}  function
+If the source amplitude had an infinite duration in time, its spectrum would form a perfect rectangular function. However, clipping the temporal duration of the source results in spectral artefacts, as was already described on the page \pageref{convolringing}.
+The artefacts can be very efficiently suppressed by multiplying the source by the \textit{Blackmann-Nutall window}\index{Blackmann-Nutall window}  function
 \begin{equation} 
 \begin{split} 
 	w_{BN}(t) :=\; & 0.3635819 + \\
@@ -698,22 +703,22 @@ Using CDH resolves some of the issues of the s-parameters method, namely
 \item{Retrieval of the dispersion curves is not much sensitive to the actual field amplitude, but rather to the frequencies detected in its ringdown. The shape of dispersion curves is less distorted by any possible error during the scattered field detection.} 
 \item{Since the wavevector is given before each simulation, no issues with wrong branch detection can flip or otherwise distort the dispersion curves.} 
 \item{Also the requirements to the structure symmetry are weaker. In general, the structure is not required to have any symmetry plane perpendicular to the wavevector. Other kinds of lower symmetry may lead to bianisotropic behaviour, which would require more sophisticated detection of the waves, though.}
-\item{Last but not least, CDH in comparison with the s-parameters method inherently takes into account even a very strong spatial dispersion. All additional waves are detected correctly.}
+\item{Last but not least, CDH inherently takes into account even very strong spatial dispersion, which is not the case of the s-parameters method. All additional waves are detected correctly.}
 \end{enumerate}
 
-CDH also has more general applicability. It can easily operate with arbitrary orientation of the wavevector $\KK$. It can even excite longitudinal waves in the structure, and naturally retrieve their dispersion curves which can also depend on $\KK$ due to the spatial dispersion. 
+CDH also has more general applicability. It can operate with arbitrary orientation of the wavevector $\KK$; it can even excite longitudinal waves in the structure and retrieve their dispersion curves.
 
 %}}}
 \paragraph{Weaknesses compared to the scattering-parameters method}%{{{
 The downside of CDH, as implemented in this thesis, is mainly in the fact that it provides less information than the s-parameter method: 
 \begin{enumerate}
 \item{It does not compute the effective impedance $\Zeff$ at all, and it is questionable whether $\Zeff$ could be computed if also the averaged magnetic field $H_y(\rr, t)$ was recorded. } 
-\item{On the one hand, CDH reliably computes the dispersion curves, and the corresponding set of $\omega_m(\KK)$ functions could be inverted into $\KK(\omega)$ and, for propagation along an optical axis (c.f. page \pageref{indexofrefraction}), also into $\Neff(\omega)$. On the other hand, it does not give any information on the topology of nodal planes, nor which branch of $\Neff(\omega)$ would be selected by the s-parameter method. } 
-\item{We did not manage to obtain any useful information related to the imaginary part of $\Neff$ -- about the structure losses, field decay in photonic band gaps, and its behaviour outside the dispersion curves in general.}
+\item{On the one hand, CDH reliably computes the dispersion curves, and the corresponding set of $\omega_m(\KK)$ functions could be inverted into $\KK(\omega)$ and, for propagation along an optical axis (cf. page \pageref{indexofrefraction}), also into $\Neff(\omega)$. On the other hand, it does not give any information on the topology of nodal planes, nor which branch of $\Neff(\omega)$ would be selected by the s-parameter method. } 
+\item{We failed to obtain any useful information related to the imaginary part of $\Neff$ -- about the structure losses, field decay in photonic band gaps, and its behaviour outside the dispersion curves in general.}
 \end{enumerate}
 Other downsides relate to the practical implementation, and arguably are the reason for its rarer use in the literature.
 \begin{enumerate}
-\item{A comparable task in CDH is more computationally intensive than in the s-parameters method. For a single set of dispersion curves, several tens of simulations with different $\KK$ are needed. After they are run, a postprocessing script must analyze all recorded fields and assemble the dispersion curves. }
+\item{A comparable task in CDH is more computationally intensive than in the s-parameters method. For a single set of dispersion curves, several tens of simulations with different $\KK$ are needed. After they are run, a postprocessing script must analyse all recorded fields and assemble the dispersion curves. }
 \item{Naturally, CDH can hardly be employed in an experiment, since it inspects the field in multiple points inside the structure simultaneously. }
 \end{enumerate}
 In spite of these limitations, the simplified implementation of CDH for this thesis remains an important complement to the s-parameter method. 
@@ -723,30 +728,29 @@ In spite of these limitations, the simplified implementation of CDH for this the
 \subsection{Other effective parameter retrieval methods}      % complement?
 \paragraph{Extensions of the scattering parameters method} %{{{
 Various modifications to the scattering parameters method were proposed, in particular with connection to the homogenisation of metamaterials. One modification makes it robust against the experimental error in the reflectance phase \cite{chalapat2009wideband}. % Wideband reference-plane invariant method for measuring electromagnetic parameters of materials
-Another solution to the issues connected with experimental measurement of the reflectance was employed during the preparation of this thesis \cite{nemec2012resonant}. It involved a slight modification to the experimental setup, and thus it is described in the experimental chapter (pp. \pageref{srtm}--\pageref{srtm2}).
+Another solution to the issues connected with experimental measurement of the reflectance was employed during the preparation of this thesis \cite{nemec2012resonant}. It involved a slight modification to the experimental set-up, and thus it is described in the experimental chapter (pp. \pageref{srtm}--\pageref{srtm2}).
 
-Some of the modifications apply to the effective parameters retrieval only, and no change is made to the way how  the scattering parameters $r(f)$ and $t(f)$ are obtained.
+Some of the modifications apply to the effective parameters retrieval only, and no change is made to the way how  the scattering parameters $r(f)$ and $t(f)$ are measured.
 Not knowing the correct branch of the index of refraction is equivalent to using the folded dispersion curves (cf. Par. \ref{par_disp_curv_per}), %% TODO refer to the theory
-so the postprocesing of FDTD data can also be viewed as a specific, nontrivial way of \textit{unfolding}\index{unfolding} the dispersion curves. This task appears to have been often done manually, particularly in earlier papers \cite{smith2002determination}. An approach based on iterative fitting which avoids abrupt discontinuities in $\Neff'(f)$ has been published \cite{chen2004robust}, but the author conjectures that, from its very nature, it would become unstable whenever a localized resonance introduces fast changes of $\Neff'(f)$, which can be found e.g. in Fig. \ref{fg_CutWires_wireradius1u_cutwidth_comparison}. Manually assisted approaches present the risk of affecting the resulting effective parameters with unjustified subjective expectations.
+so the post-processing of FDTD data can also be viewed as a specific, non-trivial way of \textit{unfolding}\index{unfolding} the dispersion curves. This task appears to have been often done manually, particularly in earlier papers \cite{smith2002determination}. An approach based on iterative fitting which avoids abrupt discontinuities in $\Neff'(f)$ has been published \cite{chen2004robust}, but the author conjectures that, from its very nature, it would become unstable whenever a localized resonance introduces fast changes of $\Neff'(f)$, which can be found e.g. in Fig. \ref{fg_CutWires_wireradius1u_cutwidth_comparison}. Manually assisted approaches present the risk of affecting the resulting effective parameters with unjustified subjective expectations.
 
-A more elegant method was published in 2010 by Szabo et al. \cite{szabo2010unique} and relies on the inherently unambiguous knowledge of $\Neff''(f)$. It uses the Hilbert transform introduced in Eq. (\ref{eq_kkresult}) to recover $\Neff'(f)$ from $\Neff''(f)$. 
-However, from our own experience, applying this integral transform to a finite part of spectrum introduces not only an arbitrary constant offset, but also slow continuous distortion of the $\Neff'(f)$ curves, thus needing a nontrivial compensation.
+A more elegant method was published in 2010 by Szab\'{o} et al. \cite{szabo2010unique} and relies on the inherently unambiguous knowledge of $\Neff''(f)$. It uses the Hilbert transform introduced in Eq. (\ref{eq_kkresult}) to recover $\Neff'(f)$ from $\Neff''(f)$. 
+However, from our own experience, applying this integral transform to a finite part of spectrum introduces not only an arbitrary constant offset, but also slow continuous distortion of the $\Neff'(f)$ curves, which would require a complicated compensation.
 
 The discussion in this thesis is restricted to the near-perpendicular wave propagation, since it is assumed the optical axis is also perpendicular to the interface. In Ref. \cite{menzel2008retrieving}, Eqs. (\ref{eq_Neff}, \ref{eq_Zeff}) were generalized also for oblique incidence. Note that for retrieving the effective index of refraction one must establish whether it makes any physical sense at all, i.e., whether the structure is either isotropic, or at least whether the angle of refraction is parallel to its optical axis (see page \pageref{indexofrefraction}).
 
-In Ref. \cite{li2009determination}, % Determination of the effective constitutive parameters of bianisotropic metamaterials from reflecttance and transmission coefficients 
+In Ref. \cite{li2009determination}, % Determination of the effective constitutive parameters of bianisotropic metamaterials from reflectance and transmission coefficients 
 the scattering parameter method was extended also to the bianisotropic behaviour of structures with reduced symmetry, and other approaches can be found \cite{andryieuski2010homogenization} in the recent literature.
 
 %}}}
 \paragraph{Averaging of the fields} %{{{
-With the scattering parameters method, $\Neff(f)$ and $\Zeff(f)$ are retrieved first using the amplitudes of the reflectance and transmittance.  were computed later. The  local effective permittivity $\eeff(f)$ and permeability $\meff(f)$ can be  computed using  Eqs. (\ref{eq_dispeqN}) and (\ref{eq_Z}), but are considered valid only when $|\Neff'| \ll 2\pi/a$, i.e., when the unit cell size $a$ is much less than the Bloch's wavelength.
+With the scattering parameters method, $\Neff(f)$ and $\Zeff(f)$ are retrieved first using the amplitudes of the reflectance and transmittance. The  local effective permittivity $\eeff(f)$ and permeability $\meff(f)$ can be  computed using  Eqs. (\ref{eq_dispeqN}) and (\ref{eq_Z}), but are considered valid only when $|\Neff'| \ll 2\pi/a$, i.e., when the unit cell size $a$ is much less than the Bloch's wavelength.
 
 The effective parameters $\eeff(f)$ and $\meff(f)$ can however be computed directly by exciting a unit cell of the structure, averaging both the fields ($\E$, $\HH$) and the displacements ($\D$ and $\B$), and dividing the respective displacement by the field. The method is described in Ref. \cite{smith2006homogenization}, where also numerical examples are given. 
 
-%As expected, when $|\Neff'| \not\ll 2\pi/a$ the value of $\eeff$ for wire array retrieved by this averaging method deviates from that one retrieved by the s-parameters method \cite[Fig. 5]{smith2006homogenization}. The author believes that none of methods attempting to homogenize the structure by the local parameters, $\eeff(f)$ and $\meff(f)$, can be exact.
+%As expected, when $|\Neff'| \not\ll 2\pi/a$ the value of $\eeff$ for wire array retrieved by this averaging method deviates from that one retrieved by the s-parameters method \cite[Fig. 5]{smith2006homogenization}. The author believes that none of methods attempting to homogenise the structure by the local parameters, $\eeff(f)$ and $\meff(f)$, can be exact.
 
-%%% Andriy2010: "Field averaging [15-16]. In this case the fields (E, D, H, B) in a unit cell are averaged on some surfaces and lines and the effective properties are found according to material relations D = İ 0 İE and B = μ 0 μH.  Determining appropriate surfaces and contours is a non-trivial problem especially when optimizing 3D MTM structures."
-%D.R. Smith and J.B. Pendry, Homogenization of metamaterials by field averaging (invited paper), Journal
+%D.R. Smith and J.B. Pendry, Homogenisation of metamaterials by field averaging (invited paper), Journal
 %of the Optical Society of America B, vol. 23, pp. 391-403, Mar. 2006.
 %J. Lerat, N. Malléjac, and O. Acher, Determination of the effective parameters of a metamaterial by field
 %summation method, Journal of Applied Physics, vol. 100, p. 084908, 2006.
@@ -756,16 +760,16 @@ The effective parameters $\eeff(f)$ and $\meff(f)$ can however be computed direc
 %}}}
 \paragraph{Bloch-mode analysis} %{{{
 A \textit{single-interface}\index{single-interface} method has been proposed \cite{yang2010retrieving} %Retrieving the effective parameters of metamaterials from the single interface scattering problem
-that analyzes only the field behaviour at the interface of a semi-infinite structure.  
+that analyses only the field behaviour at the interface of a semi-infinite structure.  
 The fields in the structure are computed and decomposed into discrete modes of the Bloch's wave. The method attempts to recognize a dominant Bloch's mode for which the wavevector $\KK(\omega)$ is deduced.
 %\cite{yang2010retrieving}LISTS: "various numerical techniques have been developed, including field averaging, 7 Bloch's mode approaches, 8–10 multipole
 %expansion, 11,12 and inversion of scattering parameters."
 \cite{zhang2006optical} % Optical negative-index bulk metamaterials consisting of 2D perforated metal-dielectric stacks
 \cite{rockstuhl2008light} %Light propagation in a fishnet metamaterial
 
-When no mode is clearly dominant, this method naturally can not be used. In such a case, even the scattering parameter method fails, but its limitations of applicability are less obvious than with the \textit{single-interface}\index{single-interface} method. Failure of the scattering parameter method can be observed as contradictory results \cite{rockstuhl2008transition} from simulations of different numbers of unit cells.
+When no mode is clearly dominant, this method naturally cannot be used. In such a case, even the scattering parameter method fails, but its limitations of applicability are less obvious than with the \textit{single-interface}\index{single-interface} method. Failure of the scattering parameter method can be observed as contradictory results \cite{rockstuhl2008transition} from simulations of different numbers of unit cells.
 In Ref. \cite{paul2011reflection} %Reflection and transmission of light at periodic layered metamaterial films
-it is argued that the existence of one dominant mode is the prerequisite necessary for the structure to be viewed as homogeneous. Refs. \cite{paul2011reflection,andryieuski2012bloch} apply the Bloch-mode analysis approach is applied to particular structures. A direct numeric evaluation of amplitudes of the different modes in 1-D photonic crystals can be found in 
+it is argued that the existence of one dominant mode is the prerequisite for the structure to be viewed as homogeneous. Refs. \cite{paul2011reflection,andryieuski2012bloch} apply the Bloch-mode analysis approach to selected structures. A direct numeric evaluation of amplitudes of the different modes in 1-D photonic crystals can be found in 
 \cite{mortensen2010unambiguous}. % On the unambiguous determination of effective optical properties of periodic metamaterials: a one-dimensional case study
 
 %\cite{smigaj2008validity} %PDF? Validity of the effective-medium approximation of photonic crystals
@@ -775,7 +779,7 @@ it is argued that the existence of one dominant mode is the prerequisite necessa
 % (skip this?) B. Popa and S.A. Cummer, Determining the effective electromagnetic properties of negative-refractive-index metamaterials from internal fields, Physical Review B, vol. 72, p. 165102, Oct. 2005
 
 In the \textit{Wave propagation retrieval method}\index{Wave propagation retrieval method}, proposed in Ref. \cite{andryieuski2010homogenization},
-the wave impinges a thick, ideally semi-infinite, volume of the periodic structure. Since there are no repeated reflections from the second interface, the averaged field amplitude is assumed to have an exponential nature: $E(z) \propto e^{-2\pi i f \Neff/c}$, and thus $\Neff$ can be reconstructed using a complex logarithm.
+the wave impinges a thick, ideally semi-infinite, volume of the periodic structure. Since there are no repeated reflections from the second interface, the averaged field amplitude is assumed to have exponential nature: $E(z) \propto e^{-2\pi i f \Neff/c}$, and thus $\Neff$ can be reconstructed using a complex logarithm.
 
 Like in the s-parameters method, the function of $K(\omega)$ can be resolved in a single run by using a broad band pulse. Like in the current-driven homogenisation,  the fields need to be sampled inside the structure. 
 % unambiguously retrieves bulk parameters; but there is still one interface and the simulation volume is large
@@ -790,23 +794,23 @@ Like in the s-parameters method, the function of $K(\omega)$ can be resolved in 
 %    \cite{petschulat2008multipole} % PDF? Multipole approach to metamaterials%}}}
 %    % todo \paragraph{Approximate analytical models} ==? multipole expansion?%{{{
 %    \paragraph{Quasimode theory} 
-%    %%% Andriy2010: Quasimode theory ...  is based on the maximization of optical density of states for a metamaterial while changing İ and μ of the ambient medium. The method is computationally demanding as it requires 4-parameters optimization for each frequency.
+%    %%% Andriy2010: Quasimode theory ...  is based on the maximisation of optical density of states for a metamaterial while changing İ and μ of the ambient medium. The method is computationally demanding as it requires 4-parameters optimisation for each frequency.
 %    \cite{sun2009effective} % Effective-medium properties of metamaterials: a quasimode theory
 
 %\cite{simovski2007bloch} Bloch's material parameters of magneto-dielectric metamaterials and the concept of Bloch's lattices
 %\cite{simovski2009material}Material parameters of metamaterials (a review)
-%\cite{simovski2011electromagnetic} On electromagnetic characterization and homogenization of nanostructured metamaterials
+%\cite{simovski2011electromagnetic} On electromagnetic characterisation and homogenisation of nanostructured metamaterials
 
 %\cite{sjoberg2005floquet}
 % Elaborate mathematical treatise on this topic: 
-% A Floquet-Bloch's decomposition of Maxwell's equations, applied to homogenization " The behavior of the solutions of a PDE with rapidly oscillating coefficients, considered over distances large compared to the oscillations, is in several respects similar to the solutions of a PDE with slowly varying coefficients.   The problem of homogenization is to find these slowly varying coefficients by an ap- propriate limit process of the rapidly oscillating ones"
+% A Floquet-Bloch's decomposition of Maxwell's equations, applied to homogenisation " The behavior of the solutions of a PDE with rapidly oscillating coefficients, considered over distances large compared to the oscillations, is in several respects similar to the solutions of a PDE with slowly varying coefficients.   The problem of homogenisation is to find these slowly varying coefficients by an ap- propriate limit process of the rapidly oscillating ones"
 %\cite{hasar2011retrieval}  Retrieval approach for determination of forward and backward wave impedances of bianisotropic metamaterials
 %}}}
 \paragraph{Concluding remarks}%{{{
 Other homogenisation methods include the \textit{multipole expansion} \cite{vynck2009all, petschulat2008multipole}, \textit{quasimode theory} \cite{sun2009effective}, or other advanced approaches as discussed by Simovski \cite{simovski2007bloch, simovski2009material, simovski2011electromagnetic, tsukerman2011nonlocal}.
 Without much exaggeration it can be concluded that there are roughly as many homogenisation methods as authors involved in the research of periodic structures. All such methods work reliably in the easy cases:
 \begin{displayquote}
-\textit{Homogenization theories are typically valid when the unit-cell size is insignificant with respect to the wavelength (the zero-frequency limit) and thus might be expected to result in a poor description of metamaterials.}
+\textit{Homogenisation theories are typically valid when the unit-cell size is insignificant with respect to the wavelength (the zero-frequency limit) and thus might be expected to result in a poor description of metamaterials.}
 \cite{smith2006homogenization} 
 \end{displayquote}
 Indeed, in most practically encountered metamaterials today, the wavelength is not more than an order of magnitude smaller than the unit cell. %so the homogenisation results deviate from each other. Moreover, the choices for one particular method among other is usually not justified by any rigorous basis in the literature. 
@@ -816,10 +820,10 @@ and that they even seem to break fundamental physical postulates \cite{koschny20
 
 As a matter of fact, the mistake might have been made already during the \textit{selection} of the method.
 
-From the literature available, the author of this thesis conjectures that systematic homogenisation in terms of the spatially dispersive (Landau-Lifshitz) permittivity $\epsLL(\omega,\KK)$ should prevent most striking quirks arising in the local homogenisation methods. All problems involving an interface then also need to be complemented by the additional boundary conditions \cite{agranovich2006spatial}.
+From the literature available, one can conjecture that systematic homogenisation in terms of the spatially dispersive (Landau-Lifshitz) permittivity $\epsLL(\omega,\KK)$ should prevent most striking quirks arising in the local homogenisation methods. All problems involving an interface then also need to be complemented by the additional boundary conditions \cite{agranovich2006spatial}.
 However, computations and the application are more complex for the medium described by the spatially-dispersive effective parameter, than for a medium described by local parameters. This is the price that would have to be paid for its more general validity.
 
-In this thesis, we restrict the discussion to the scattering parameters method, pointing out where it is applicable, and where its result cease to make any sense. The current-driven homogenization then remains as a good reference to compare the results with.
+In this thesis, we restrict the discussion mostly to the scattering parameters method, pointing out where it is applicable, and where its results cease to make any sense. The current-driven homogenisation then remains as a good reference to compare the results with.
 
 %}}}
 
